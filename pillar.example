@@ -13,6 +13,8 @@ pcs:
       - node1.example.org
       - node2.example.org
 
+    repo: {{ grains.oscodename }}
+
     # credential for the cluster user (default user: hacluster)
     pcspasswd: hoonetorg
     pcspasswd_hash: $6$....
