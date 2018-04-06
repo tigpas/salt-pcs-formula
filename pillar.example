@@ -17,7 +17,6 @@ pcs:
 
     # credential for the cluster user (default user: hacluster)
     pcspasswd: hoonetorg
-    pcspasswd_hash: $6$....
 
     setup_extra_args:
       - --start

@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 # vim: ft=yaml
 pcs:
+  pcsuid: 189
+  pcsgid: 189
   pcsuser: hacluster
   pcspasswd: hacluster
+  pcsgroup: haclient
