@@ -1,17 +1,16 @@
 pcs:
   lookup:
-    # _id is the minion id for orchestration 
-    # which can defer from the node name in cluster
-    # when server has multiple interfaces/IP's/hostnames
-    # !!! both values are required, even if equal
-    admin_node_id: node1.example.org
-    admin_node: node1.example.org
-    node_ids:
-      - node1.example.org
-      - node2.example.org
+    # First Node is the admin_node!
+    # nodes is a comma seperated liste of the fqdns of differents rings
+    # (Not supported by salt currently, so only useble with state "pcs.patch_states_pcs")
+    # If the first fqdn not the minion_id, you must definde node_ids
+    #node_ids:
+    #  - node1.example.org
+    #  - node2.example.org
     nodes:
-      - node1.example.org
-      - node2.example.org
+      - node1-bento-debian-9.vagrantup.com,ha.node1-bento-debian-9.vagrantup.com
+      - node2-bento-debian-9.vagrantup.com,ha.node2-bento-debian-9.vagrantup.com
+      - node3-bento-debian-9.vagrantup.com,ha.node3-bento-debian-9.vagrantup.com
 
     repo: {{ grains.oscodename }}
 
@@ -26,25 +25,66 @@ pcs:
       - --enable
 
     # cib for properties, default and op_defaults (optional)
-    cluster_settings_cib: cib_for_cluster_settings
-    properties:
-      no-quorum-policy: ignore
-    defaults:
-      resource-stickiness: INFINITY
-    op_defaults:
-      monitor-interval: 60s
+    #cluster_settings_cib: cib_for_cluster_settings
+    #properties:
+    #  no-quorum-policy: ignore
+    #defaults:
+    #  resource-stickiness: INFINITY
+    #op_defaults:
+    #  monitor-interval: 60s
 
     # cib for creating stonith resources (optional)
-    stonith_cib: cib_for_stonith
-    stonith_resources:
-      eps_fence:
-        stonith_id: eps_fence
-        stonith_device_type: fence_eps
-        stonith_device_options:
-          - pcmk_host_map=node1.example.org:01;node2.example.org:02
-          - ipaddr=myepsdevice.example.org
-          - power_wait=5
-          - verbose=1
-          - debug=/var/log/pcsd/eps_fence.log
-          - login=hidden
-          - passwd=hoonetorg
+    #stonith_cib: cib_for_stonith
+    #stonith_resources:
+    #  eps_fence:
+    #    stonith_id: eps_fence
+    #    stonith_device_type: fence_eps
+    #    stonith_device_options:
+    #      - pcmk_host_map=node1.example.org:01;node2.example.org:02
+    #      - ipaddr=myepsdevice.example.org
+    #      - power_wait=5
+    #      - verbose=1
+    #      - debug=/var/log/pcsd/eps_fence.log
+    #      - login=hidden
+    #      - passwd=hoonetorg
+    # Or disable stonith
+    properties:
+      stonith-enabled: "'false'"
+
+    resources:
+      ip1:
+        resource_type: ocf:heartbeat:IPaddr2
+        resource_options:
+          - 'ip=10.0.0.99'
+          - 'nic=eth1'
+          - 'cidr_netmask=24'
+          - 'op'
+          - 'monitor'
+          - 'interval=20'
+          - 'timeout=60'
+          - 'on-fail=restart'
+      ip2:
+        resource_type: ocf:heartbeat:IPaddr2
+        resource_options:
+          - 'ip=10.0.0.100'
+          - 'nic=eth1'
+          - 'cidr_netmask=24'
+          - 'op'
+          - 'monitor'
+          - 'interval=20'
+          - 'timeout=60'
+          - 'on-fail=restart'
+    constraints:
+      col_ip1_ip2:
+        constraint_type: colocation
+        constraint_options:
+          - 'add'
+          - 'ip1'
+          - 'with'
+          - 'ip2'
+      order_ip1_ip2:
+        constraint_type: order
+        constraint_options:
+          - 'ip1'
+          - 'then'
+          - 'ip2'

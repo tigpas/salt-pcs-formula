@@ -15,15 +15,13 @@ pcs_setup__file_/etc/corosync/uidgid.d:
 
 pcs_setup__setup:
   pcs.cluster_setup:
-    - nodes: [ '{{pcs.admin_node}}' ]
+    - nodes: [ '{{pcs.nodes[0]}}' ]
     - pcsclustername: {{pcs.pcsclustername|default('pcscluster')}} 
     - extra_args: {{pcs.setup_extra_args|default([])}}
 
-{% for node in pcs.nodes|sort %}
-{% if node not in [ pcs.admin_node ] %}
+{% for node in pcs.nodes[1:]|sort %}
 pcs_setup__node_present_{{node}}:
   pcs.cluster_node_present:
     - node: {{node}}
     - extra_args: {{pcs.node_present_extra_args|default([])}}
-{% endif %}
 {% endfor %}

@@ -1,6 +1,13 @@
 #!jinja|yaml
-{% set node_ids = salt['pillar.get']('pcs:lookup:node_ids') -%}
-{% set admin_node_id = salt['pillar.get']('pcs:lookup:admin_node_id') -%}
+{% if salt['pillar.get']('pcs:lookup:node_ids') -%}
+{%     set node_ids = salt['pillar.get']('pcs:lookup:node_ids') -%}
+{% else -%}
+{%     set node_ids = [] -%}
+{%     for v in salt['pillar.get']('pcs:lookup:nodes') -%}
+{%         do node_ids.append(v.split(',')[0]) -%}
+{%     endfor -%}
+{% endif -%}
+{% set admin_node_id = node_ids[0] -%}
 
 # node_ids: {{node_ids|json}}
 # admin_node_id: {{admin_node_id}}
