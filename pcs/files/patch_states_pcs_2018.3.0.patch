@@ -1,0 +1,84 @@
+diff --git a/salt/states/pcs.py b/salt/states/pcs.py
+index ddf8160..719edb6 100644
+--- a/salt/states/pcs.py
++++ b/salt/states/pcs.py
+@@ -505,6 +505,7 @@ def cluster_setup(name, nodes, pcsclustername='pcscluster', extra_args=None):
+     setup = __salt__['pcs.cluster_setup'](nodes=nodes, pcsclustername=pcsclustername, extra_args=extra_args)
+     log.trace('Output of pcs.cluster_setup: %s', setup)
+ 
++    nodes_primary = [node.split(',')[0] for node in nodes]
+     setup_dict = {}
+     for line in setup['stdout'].splitlines():
+         log.trace('line: %s', line)
+@@ -512,12 +513,12 @@ def cluster_setup(name, nodes, pcsclustername='pcscluster', extra_args=None):
+         if len(line.split(':')) in [2]:
+             node = line.split(':')[0].strip()
+             setup_state = line.split(':')[1].strip()
+-            if node in nodes:
++            if node in nodes_primary:
+                 setup_dict.update({node: setup_state})
+ 
+     log.trace('setup_dict: %s', setup_dict)
+ 
+-    for node in nodes:
++    for node in nodes_primary:
+         if node in setup_dict and setup_dict[node] in ['Succeeded', 'Success']:
+             ret['comment'] += 'Set up {0}\n'.format(node)
+             ret['changes'].update({node: {'old': '', 'new': 'Setup'}})
+@@ -567,15 +568,16 @@ def cluster_node_present(name, node, extra_args=None):
+     is_member = __salt__['cmd.run_all'](is_member_cmd, output_loglevel='trace', python_shell=False)
+     log.trace('Output of pcs status nodes corosync: %s', is_member)
+ 
++    node_primary = node.split(',')[0]
+     for line in is_member['stdout'].splitlines():
+         if len(line.split(':')) in [2]:
+             key = line.split(':')[0].strip()
+             value = line.split(':')[1].strip()
+             if key in ['Offline', 'Online']:
+                 if len(value.split()) > 0:
+-                    if node in value.split():
++                    if node_primary in value.split():
+                         node_add_required = False
+-                        ret['comment'] += 'Node {0} is already member of the cluster\n'.format(node)
++                        ret['comment'] += 'Node {0} is already member of the cluster\n'.format(node_primary)
+                     else:
+                         current_nodes += value.split()
+ 
+@@ -584,7 +586,7 @@ def cluster_node_present(name, node, extra_args=None):
+ 
+     if __opts__['test']:
+         ret['result'] = None
+-        ret['comment'] += 'Node {0} is set to be added to the cluster\n'.format(node)
++        ret['comment'] += 'Node {0} is set to be added to the cluster\n'.format(node_primary)
+         return ret
+ 
+     if not isinstance(extra_args, (list, tuple)):
+@@ -600,7 +602,7 @@ def cluster_node_present(name, node, extra_args=None):
+         if len(line.split(':')) in [2]:
+             current_node = line.split(':')[0].strip()
+             current_node_add_state = line.split(':')[1].strip()
+-            if current_node in current_nodes + [node]:
++            if current_node in current_nodes + [node_primary]:
+                 node_add_dict.update({current_node: current_node_add_state})
+     log.trace('node_add_dict: %s', node_add_dict)
+ 
+@@ -614,14 +616,14 @@ def cluster_node_present(name, node, extra_args=None):
+             ret['result'] = False
+             ret['comment'] += 'Failed to update corosync.conf on node {0}\n'.format(current_node)
+ 
+-    if node in node_add_dict and node_add_dict[node] in ['Succeeded', 'Success']:
+-        ret['comment'] += 'Added node {0}\n'.format(node)
++    if node_primary in node_add_dict and node_add_dict[node_primary] in ['Succeeded', 'Success']:
++        ret['comment'] += 'Added node {0}\n'.format(node_primary)
+         ret['changes'].update({node: {'old': '', 'new': 'Added'}})
+     else:
+         ret['result'] = False
+-        ret['comment'] += 'Failed to add node{0}\n'.format(node)
+-        if node in node_add_dict:
+-            ret['comment'] += '{0}: node_add_dict: {1}\n'.format(node, node_add_dict[node])
++        ret['comment'] += 'Failed to add node{0}\n'.format(node_primary)
++        if node_primary in node_add_dict:
++            ret['comment'] += '{0}: node_add_dict: {1}\n'.format(node_primary, node_add_dict[node_primary])
+         ret['comment'] += six.text_type(node_add)
+ 
+     log.trace('ret: %s', ret)
