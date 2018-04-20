@@ -17,11 +17,13 @@ suites:
     driver:
        network:
          - ["private_network", {ip: "10.0.0.101"}]
+         - ["private_network", {ip: "10.0.1.101"}]
     provisioner:
       state_top:
         base:
           '*':
             - pcs.patch_states_pcs
+            - pcs.patch_states_user
             - pcs
       pillars:
         top.sls:
@@ -32,11 +34,13 @@ suites:
     driver:
        network:
          - ["private_network", {ip: "10.0.0.102"}]
+         - ["private_network", {ip: "10.0.1.102"}]
     provisioner:
       state_top:
         base:
           '*':
             - pcs.patch_states_pcs
+            - pcs.patch_states_user
             - pcs
       pillars:
         top.sls:
@@ -48,11 +52,13 @@ suites:
     driver:
        network:
          - ["private_network", {ip: "10.0.0.103"}]
+         - ["private_network", {ip: "10.0.1.103"}]
     provisioner:
       state_top:
         base:
           '*':
             - pcs.patch_states_pcs
+            - pcs.patch_states_user
             - pcs
       pillars:
         top.sls:
