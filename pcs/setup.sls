@@ -24,4 +24,7 @@ pcs_setup__node_present_{{node}}:
   pcs.cluster_node_present:
     - node: {{node}}
     - extra_args: {{pcs.node_present_extra_args|default([])}}
+    - retry:
+        attempts: 6
+        interval: 10
 {% endfor %}
