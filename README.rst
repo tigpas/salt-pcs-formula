@@ -49,3 +49,9 @@ Installs the pcs package, and starts the associated pcsd service.
 ------------
 
 Configures pacemaker resources.
+
+``pcs.orchestration``
+------------
+
+Set PCS in maintenance mode, cleanup the hole cluster config and will recreate the cluster config.
+On masterless salt: You must run pcs.cleanup on all other nodes, before you can run pcs.orchestration on admin node (first node in node list)

@@ -20,6 +20,16 @@ pcs_orchestration__install:
     - saltenv: {{saltenv}}
     - sls: pcs
 
+pcs_orchestration__cleanup:
+  salt.state:
+    - tgt: {{node_ids|json}}
+    - tgt_type: list
+    - expect_minions: True
+    - saltenv: {{saltenv}}
+    - sls: pcs.cleanup
+    - require:
+      - salt: pcs_orchestration__install
+
 pcs_orchestration__auth:
   salt.state:
     - tgt: {{admin_node_id}}
