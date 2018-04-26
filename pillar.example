@@ -12,7 +12,7 @@ pcs:
       - node2-bento-debian-9.vagrantup.com,ha.node2-bento-debian-9.vagrantup.com
       - node3-bento-debian-9.vagrantup.com,ha.node3-bento-debian-9.vagrantup.com
 
-    repo: {{ grains.oscodename }}
+    #repo: {{ grains.oscodename }}-backports
 
     # credential for the cluster user (default user: hacluster)
     pcspasswd: hoonetorg

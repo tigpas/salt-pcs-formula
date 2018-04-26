@@ -33,7 +33,9 @@ pcs_install__repopkgpre:
 pcs_install__repopkg:
   pkg.installed:
     - pkgs: {{ pcs.repopkgs }}
+    {% if pcs.repo is defined %}
     - fromrepo: {{pcs.repo}}
+    {% endif %}
     - install_recommends: False
     - require:
       - pkg: pcs_install__repopkgpre
