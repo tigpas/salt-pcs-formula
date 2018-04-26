@@ -25,6 +25,7 @@ suites:
             - pcs.patch_states_pcs
             - pcs.patch_states_user
             - pcs
+            - pcs.resources
       pillars:
         top.sls:
           base:
@@ -42,6 +43,7 @@ suites:
             - pcs.patch_states_pcs
             - pcs.patch_states_user
             - pcs
+            - pcs.resources
       pillars:
         top.sls:
           base:
@@ -60,6 +62,7 @@ suites:
             - pcs.patch_states_pcs
             - pcs.patch_states_user
             - pcs
+            - pcs.resources
       pillars:
         top.sls:
           base:
