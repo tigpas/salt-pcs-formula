@@ -11,6 +11,18 @@ provisioner:
   require_chef: false
   pillars-from-files:
     pcs.sls: pillar.example
+  init_environment: |
+    echo -e "10.0.0.101 node1-bento-debian-9.vagrantup.com\n10.0.0.102 node2-bento-debian-9.vagrantup.com\n10.0.0.103 node3-bento-debian-9.vagrantup.com\n" | sudo tee -a /etc/hosts
+    echo -e "10.0.1.101 ha.node1-bento-debian-9.vagrantup.com\n10.0.1.102 ha.node2-bento-debian-9.vagrantup.com\n10.0.1.103 ha.node3-bento-debian-9.vagrantup.com\n" | sudo tee -a /etc/hosts
+    sudo sed -i s/[a-z0-9-]*.vagrantup.com\\t//g /etc/hosts
+    if [[ $(hostname -f) =~ ^node1 ]]; then
+        while [ "$(timeout 10 ping 10.0.0.102 -c 5 -i 0.2 -q > /dev/null 2>&1; echo $?)" -gt 0 ]; do echo "Waiting for node2"; done
+        while [ "$(timeout 10 ping 10.0.0.103 -c 5 -i 0.2 -q > /dev/null 2>&1; echo $?)" -gt 0 ]; do echo "Waiting for node3"; done
+        for i in {60..0..5}; do
+            echo "Sleep $i"
+            sleep 5
+        done
+    fi
 
 suites:
   - name: node1
@@ -25,6 +37,7 @@ suites:
             - pcs.patch_states_pcs
             - pcs.patch_states_user
             - pcs
+            - pcs.orchestration
             - pcs.resources
       pillars:
         top.sls:
@@ -43,7 +56,7 @@ suites:
             - pcs.patch_states_pcs
             - pcs.patch_states_user
             - pcs
-            - pcs.resources
+            - pcs.cleanup
       pillars:
         top.sls:
           base:
@@ -62,14 +75,10 @@ suites:
             - pcs.patch_states_pcs
             - pcs.patch_states_user
             - pcs
-            - pcs.resources
+            - pcs.cleanup
+      pillars:
       pillars:
         top.sls:
           base:
             '*':
                - pcs
-
-# echo -e "10.0.0.101 node1-bento-debian-9.vagrantup.com\n10.0.0.102 node2-bento-debian-9.vagrantup.com\n10.0.0.103 node3-bento-debian-9.vagrantup.com\n" >> /etc/hosts
-# echo -e "10.0.1.101 ha.node1-bento-debian-9.vagrantup.com\n10.0.1.102 ha.node2-bento-debian-9.vagrantup.com\n10.0.1.103 ha.node3-bento-debian-9.vagrantup.com\n" >> /etc/hosts
-# sed -i s/[a-z0-9-]*.vagrantup.com\\t//g /etc/hosts
-# salt-call --config-dir=/tmp/kitchen/etc/salt --local state.apply pcs.orchestration
